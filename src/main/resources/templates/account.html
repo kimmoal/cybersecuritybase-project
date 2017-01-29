@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>People</title>
+</head>
+<body>
+
+<header th:replace="header :: header">
+    <p>header links</p>
+</header>
+
+<h2 th:if="${not canEdit}" th:text="|Messages to ${account.name}|">Messages to</h2>
+
+<div th:if="${canEdit}">
+    <h2>Edit your information</h2>
+    <form action="#" th:action="@{/account/{user}(user=${account.username})}" method="POST">
+        <p><label th:for="${account.name}">Name</label>:
+            <input type="text" th:field="*{account.name}"/></p>
+        <p><label th:for="${account.email}">Email</label>:
+            <input type="text" th:field="*{account.email}"/></p>
+        <p><label th:for="${#ids.next('visible')}">Visible to others</label>:
+            <input type="checkbox" th:field="*{account.visible}" /></p>
+        <p><input type="submit" value="Submit"/></p>
+    </form>
+</div>
+
+<h2 th:if="${canEdit}" th:text="|Messages to you|">Messages to</h2>
+<table>
+    <tr>
+        <th>Account</th>
+        <th>Name</th>
+        <th>Message</th>
+
+    </tr>
+    <tr th:each="msg : ${messages}">
+        <td th:text="${msg.sender.username}">Handle</td>
+        <td th:text="${msg.sender.name}">Name</td>
+        <td th:utext="${msg.content}">Message</td>
+    </tr>
+</table>
+
+</body>
+</html>

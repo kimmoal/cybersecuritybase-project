@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>template</title>
+</head>
+<body>
+
+<header th:fragment="header">
+    <ul>
+        <li><a th:href="@{/account/{username}(username=${owner.username})}">Your account</a></li>
+        <li><a th:href="@{/message/{username}(username=${owner.username})}">Your messages</a></li>
+        <li><a th:href="@{/accounts}">All people</a></li>
+        <li><a th:href="@{/logout}">Logout</a></li>
+    </ul>
+</header>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>People</title>
+</head>
+<body>
+
+<header th:replace="header :: header">
+    <p>header links</p>
+</header>
+
+<h1 th:text="|${account.username}'s messages|">User's messages</h1>
+
+<h2 th:text="|Send message to ${account.username}|">Send message to user</h2>
+<p>You can use markup tags such as &lt;a&gt;, &lt;strong&gt; and &lt;strike&gt; etc.</p>
+
+<form action="#" th:action="@{/message/{user}(user=${account.username})}" method="POST">
+    <p><label for="message">Message</label>:
+        <textarea id="message" name="message"></textarea></p>
+    <p><input type="submit" value="Submit"/></p>
+</form>
+
+<table th:if="${messages != null}">
+    <tr>
+        <th>Account</th>
+        <th>Name</th>
+        <th>Message</th>
+    </tr>
+    <tr th:each="msg : ${messages}">
+        <div th:if="${msg.sender.visible or msg.receiver.visible}">
+            <td th:text="${msg.sender.username}">Account</td>
+            <td th:text="${msg.sender.name}">Name</td>
+            <td th:utext="${msg.content}">Message</td>
+        </div>
+    </tr>
+</table>
+
+<h1 th:if="${messages == null}">No messages yet.</h1>
+
+</body>
+</html>

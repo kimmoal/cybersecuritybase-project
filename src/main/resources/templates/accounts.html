@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>People</title>
+</head>
+<body>
+
+<header th:replace="header :: header">
+    <p>header links</p>
+</header>
+
+<h1>Here are all available people</h1>
+
+<table>
+    <tr>
+        <th>Handle</th>
+        <th>Name</th>
+    </tr>
+    <tr th:each="acc : ${accounts}">
+        <span th:if="${acc.visible}">
+            <td><a th:href="@{/message/{username}(username=${acc.username})}" th:text="${acc.username}">Handle</a></td>
+            <td><a th:href="@{/message/{username}(username=${acc.username})}" th:text="${acc.name}">Name</a></td>
+        </span>
+    </tr>
+</table>
+
+</body>
+</html>
