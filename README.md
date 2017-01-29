@@ -37,7 +37,7 @@ After registering, the user will be asked to input the received code. This code 
 
 ### A3: Poor input/output sanitation for posted messages
 
-Affected urls: http://localhost:8080/messages/{username}
+URL: http://localhost:8080/messages/{username}
 
 After registering, the user has the chance to send messages to other users in the system and to themselves. These messages are intended to have HTML structure, so the HTML encoding has been turned off to introduce the developers own homebrew input validation scheme. It is based on a blacklist of strings that are removed from the message body, so it is easily defeated.
 
@@ -60,9 +60,11 @@ Example: there exists an example user ted that can be accessed in http://localho
 
 ### A7: User settings can be changed by any other user
 
+URL: http://localhost:8080/account/{username}
+
 AccountController.userSettings does not check the authorization of the POST request, so any logged in user can POST new settings for the any user.
 
-Easiest reproduction of the issue is changing the form action attribute to any other user such as:
+Easiest reproduction of the issue is changing the currently logged in user's form action attribute to any other user such as:
 
 `<form action="/account/teddy" method="POST">`
 
@@ -70,7 +72,7 @@ becomes
 
 `<form action="/account/ted" method="POST">`
 
-**FIX**: userSettings should be changed to check for the currently logged in user against the user for the proposed change.
+**FIX**: AccountController.userSettings should be changed to check for the currently logged in user against the user for the proposed change.
 
 ### A8: CSRF is disabled
 
